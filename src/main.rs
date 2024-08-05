@@ -11,7 +11,8 @@ mod wav;
 
 fn main() -> Result<()> {
     let model_path = Path::new("segmentation-3.0.onnx");
-    let (samples, sample_rate) = wav::read_wav(&std::env::args().nth(1).expect("Please specify audio file"))?;
+    let (samples, sample_rate) =
+        wav::read_wav(&std::env::args().nth(1).expect("Please specify audio file"))?;
 
     let samples_f32: Vec<f32> = samples.iter().map(|&x| x as f32).collect();
 
@@ -31,7 +32,7 @@ fn main() -> Result<()> {
         let segment_samples = &samples_f32[start_idx..end_idx];
         let embedding_result = embedding_extractor.compute(&segment_samples).unwrap();
         let speaker = embedding_manager
-            .get_speaker(embedding_result, 0.9)
+            .get_speaker(embedding_result, 0.5)
             .unwrap_or(usize::MAX);
         println!(
             "Segment: start = {:.2}, end = {:.2}, speaker = {}",
