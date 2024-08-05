@@ -11,7 +11,7 @@ mod wav;
 
 fn main() -> Result<()> {
     let model_path = Path::new("segmentation-3.0.onnx");
-    let (samples, sample_rate) = wav::read_wav("normal.wav")?;
+    let (samples, sample_rate) = wav::read_wav(&std::env::args().nth(1).expect("Please specify audio file"))?;
 
     let samples_f32: Vec<f32> = samples.iter().map(|&x| x as f32).collect();
 
