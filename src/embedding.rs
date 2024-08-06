@@ -29,8 +29,17 @@ impl EmbeddingExtractor {
             mel_spec::mel::mel(sampling_rate, fft_size, n_mels, f_min, f_max, hkt, norm);
 
         let features: Array2<f32> = features_f64.mapv(|x| x as f32);
-        let features = features.t().to_owned(); // Transpose the array
+        let mut features = features.t().to_owned(); // Transpose the array
+        let mean = features
+            .mean_axis(ndarray::Axis(0))
+            .expect("Failed to compute mean")
+            .insert_axis(ndarray::Axis(0)); // Add batch axis for broadcasting
+        features -= &mean;
+
         let features_3d = features.insert_axis(ndarray::Axis(0)); // Add batch dimension
+
+        // # Apply CMN (Cepstral Mean Normalization)
+        // features = features - np.mean(features, axis=0)
         let inputs = ort::inputs! ["feats" => features_3d.view()]?;
 
         let ort_outs = self.session.run(inputs)?;
