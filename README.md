@@ -1,26 +1,18 @@
 # pyannote-rs
 
-## Setup
+## Install
 
 ```console
 cargo add pyannote-rs
 ```
 
+## Usage
+
+See [Building](BUILDING.md)
+
 ## Examples
 
-1. Prepare models
-
-```console
-wget https://github.com/pengzhendong/pyannote-onnx/raw/master/pyannote_onnx/segmentation-3.0.onnx
-wget https://github.com/thewh1teagle/sherpa-rs/releases/download/v0.1.0/6_speakers.wav
-wget https://github.com/k2-fsa/sherpa-onnx/releases/download/speaker-recongition-models/wespeaker_en_voxceleb_CAM++.onnx
-```
-
-2. Execute
-
-```console
-cargo run --example diarize 6_speakers.wav
-```
+See [examples](examples)
 
 ## How it works
 
