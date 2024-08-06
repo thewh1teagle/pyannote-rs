@@ -278,9 +278,9 @@ dependencies = [
 
 [[package]]
 name = "flate2"
-version = "1.0.30"
+version = "1.0.31"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5f54427cfd1c7829e2a139fcefea601bf088ebca651d2bf53ebc600eac295dae"
+checksum = "7f211bbe8e69bbd0cfdea405084f128ae8b4aaa6b0b522fc8f2b009084797920"
 dependencies = [
  "crc32fast",
  "miniz_oxide",
@@ -430,7 +430,7 @@ dependencies = [
 [[package]]
 name = "knf-rs"
 version = "0.1.0"
-source = "git+https://github.com/thewh1teagle/knf-rs#2f6d36f397c18bd43371bfa1d7faec806f5ca5d1"
+source = "git+https://github.com/thewh1teagle/knf-rs#7149a5a4b7cbaa2c0a3763f68f148b8385a335c7"
 dependencies = [
  "bindgen",
  "cmake",
