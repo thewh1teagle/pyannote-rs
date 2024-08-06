@@ -13,7 +13,6 @@ fn main() -> Result<()> {
     let mut samples_f32 = vec![0.0; samples.len()];
     knf_rs::convert_integer_to_float_audio(&samples, &mut samples_f32);
 
-    // FYI: it doesn't work but that's the direction.
     let mut embedding_extractor =
         EmbeddingExtractor::new(Path::new("wespeaker_en_voxceleb_CAM++.onnx")).unwrap();
     let mut embedding_manager = EmbeddingManager::new(6);
