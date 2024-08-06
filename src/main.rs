@@ -49,6 +49,7 @@ fn main() -> Result<()> {
                 );
             }
             Err(error) => {
+                println!("start = {:.2}, end = {:.2}, speaker = {}", start, end, "?");
                 println!("error: {:?}", error);
             }
         }
