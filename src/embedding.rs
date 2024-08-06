@@ -29,11 +29,9 @@ impl EmbeddingExtractor {
             mel_spec::mel::mel(sampling_rate, fft_size, n_mels, f_min, f_max, hkt, norm);
 
         let features: Array2<f32> = features_f64.mapv(|x| x as f32);
-
+        let features = features.t().to_owned(); // Transpose the array
         let features_3d = features.insert_axis(ndarray::Axis(0)); // Add batch dimension
-
-        let length = Array1::from_vec(vec![samples.len() as i64]);
-        let inputs = ort::inputs! {features_3d.view(), length}?;
+        let inputs = ort::inputs! ["feats" => features_3d.view()]?;
 
         let ort_outs = self.session.run(inputs)?;
         let ort_out = ort_outs

@@ -18,7 +18,7 @@ fn main() -> Result<()> {
 
     // FYI: it doesn't work but that's the direction.
     let mut embedding_extractor =
-        EmbeddingExtractor::new(Path::new("nemo_en_titanet_small.onnx")).unwrap();
+        EmbeddingExtractor::new(Path::new("wespeaker_en_voxceleb_CAM++.onnx")).unwrap();
     let mut embedding_manager = EmbeddingManager::new(100);
 
     let segments = segment::segment(&samples, sample_rate, model_path)?;
