@@ -6,7 +6,10 @@ edition = "2021"
 [dependencies]
 eyre = "0.6.12"
 hound = "3.5.1"
-mel_spec = "0.2.3"
 ndarray = "0.15.6"
 ort = "2.0.0-rc.4"
-knf-rs = { git = "https://github.com/thewh1teagle/knf-rs" }
+knf-rs = "0.1.0"
+
+
+[[example]]
+name = "diarize"

@@ -1,13 +1,9 @@
-use embedding::EmbeddingExtractor;
 use eyre::Result;
-use identify::EmbeddingManager;
+use pyannote_rs::embedding::EmbeddingExtractor;
+use pyannote_rs::identify::EmbeddingManager;
+use pyannote_rs::segment;
+use pyannote_rs::wav;
 use std::path::Path;
-
-mod embedding;
-mod identify;
-mod segment;
-mod session;
-mod wav;
 
 fn main() -> Result<()> {
     let model_path = Path::new("segmentation-3.0.onnx");
