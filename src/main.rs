@@ -20,7 +20,7 @@ fn main() -> Result<()> {
     // FYI: it doesn't work but that's the direction.
     let mut embedding_extractor =
         EmbeddingExtractor::new(Path::new("wespeaker_en_voxceleb_CAM++.onnx")).unwrap();
-    let mut embedding_manager = EmbeddingManager::new(5);
+    let mut embedding_manager = EmbeddingManager::new(6);
 
     let segments = segment::segment(&samples, sample_rate, model_path)?;
 
