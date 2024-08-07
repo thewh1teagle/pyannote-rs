@@ -20,8 +20,8 @@ fn main() -> Result<()> {
     for segment in segments {
         // Compute the embedding result
         let embedding_result = match embedding_extractor.compute(&segment.samples) {
-            Ok(result) => result,
-            error => {
+            Ok(result) => result.collect(),
+            Err(error) => {
                 println!("error: {:?}", error);
                 println!(
                     "start = {:.2}, end = {:.2}, speaker = ?",

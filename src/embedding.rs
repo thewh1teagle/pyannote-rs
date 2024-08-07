@@ -14,7 +14,7 @@ impl EmbeddingExtractor {
         Ok(Self { session })
     }
 
-    pub fn compute(&mut self, samples: &[i16]) -> Result<Vec<f32>> {
+    pub fn compute(&mut self, samples: &[i16]) -> Result<impl Iterator<Item = f32>> {
         // Convert to f32 precisely
         let mut samples_f32 = vec![0.0; samples.len()];
         knf_rs::convert_integer_to_float_audio(samples, &mut samples_f32);
@@ -31,8 +31,10 @@ impl EmbeddingExtractor {
             .try_extract_tensor::<f32>()
             .context("Failed to extract tensor")?;
 
+        // Collect the tensor data into a Vec to own it
         let embeddings: Vec<f32> = ort_out.iter().copied().collect();
 
-        Ok(embeddings)
+        // Return an iterator over the Vec
+        Ok(embeddings.into_iter())
     }
 }
