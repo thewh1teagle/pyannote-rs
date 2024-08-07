@@ -31,7 +31,7 @@ You can resolve it by creating `.cargo/config.toml` next to `Cargo.toml` with th
 
 ```toml
 [target.'cfg(windows)']
-rustflags = ["-Ctarget-feature=+crt-static"]
+rustflags = ["-C target-feature=+crt-static"]
 ```
 
 Or set the environment variable `RUSTFLAGS` to `-C target-feature=+crt-static`
