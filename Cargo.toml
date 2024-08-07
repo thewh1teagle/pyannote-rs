@@ -12,6 +12,10 @@ ndarray = "0.15.6"
 ort = "2.0.0-rc.4"
 knf-rs = "0.1.5"
 
+[features]
+default = []
+coreml = ["ort/coreml"]
+directml = ["ort/directml"]
 
 [[example]]
 name = "diarize"
