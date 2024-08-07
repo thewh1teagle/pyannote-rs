@@ -1,10 +1,8 @@
-use std::path::Path;
-
+use crate::session;
 use eyre::Result;
 use ndarray::Array2;
 use ort::Session;
-
-use crate::session;
+use std::path::Path;
 
 pub struct EmbeddingExtractor {
     session: Session,

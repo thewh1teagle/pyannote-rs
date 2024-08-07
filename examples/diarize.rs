@@ -1,14 +1,12 @@
 use eyre::Result;
-use pyannote_rs::embedding::EmbeddingExtractor;
-use pyannote_rs::identify::EmbeddingManager;
-use pyannote_rs::segment;
-use pyannote_rs::wav;
+use pyannote_rs::EmbeddingExtractor;
+use pyannote_rs::EmbeddingManager;
 use std::path::Path;
 
 fn main() -> Result<()> {
     let model_path = Path::new("segmentation-3.0.onnx");
     let (samples, sample_rate) =
-        wav::read_wav(&std::env::args().nth(1).expect("Please specify audio file"))?;
+        pyannote_rs::read_wav(&std::env::args().nth(1).expect("Please specify audio file"))?;
 
     let mut samples_f32 = vec![0.0; samples.len()];
     knf_rs::convert_integer_to_float_audio(&samples, &mut samples_f32);
@@ -17,7 +15,7 @@ fn main() -> Result<()> {
         EmbeddingExtractor::new(Path::new("wespeaker_en_voxceleb_CAM++.onnx")).unwrap();
     let mut embedding_manager = EmbeddingManager::new(6);
 
-    let segments = segment::segment(&samples, sample_rate, model_path)?;
+    let segments = pyannote_rs::segment(&samples, sample_rate, model_path)?;
 
     for (start, end) in segments {
         // Convert start and end times to sample indices
@@ -35,7 +33,7 @@ fn main() -> Result<()> {
         match embedding_extractor.compute(&segment_samples) {
             Ok(embedding_result) => {
                 let speaker = embedding_manager
-                    .get_speaker(embedding_result, 0.5)
+                    .search_speaker(embedding_result, 0.5)
                     .map(|r| r.to_string())
                     .unwrap_or("?".into());
                 println!(

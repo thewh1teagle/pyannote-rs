@@ -23,7 +23,8 @@ impl EmbeddingManager {
         dot_product / (norm_a * norm_b)
     }
 
-    pub fn get_speaker(&mut self, embedding: Vec<f32>, threshold: f32) -> Option<usize> {
+    /// Search or create speaker
+    pub fn search_speaker(&mut self, embedding: Vec<f32>, threshold: f32) -> Option<usize> {
         let embedding_array = Array1::from_vec(embedding);
         let mut best_speaker_id = None;
         let mut best_similarity = threshold;
