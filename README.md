@@ -1,5 +1,14 @@
 # pyannote-rs
 
+Pyannote audio diarization in Rust
+
+## Features
+
+- Compute 1 hour of audio in less than a minute on CPU.
+- Faster performance with DirectML on Windows and CoreML on macOS.
+- Accurate timestamps with Pyannote segmentation.
+- Identify speakers with wespeaker embeddings.
+
 ## Install
 
 ```console
@@ -14,19 +23,21 @@ See [Building](BUILDING.md)
 
 See [examples](examples)
 
-## How it works
+<details>
+<summary>How it works</summary>
 
-pyannote-rs uses 2 models to achieve speaker diarization. The first one is [segmentation-3.0](https://huggingface.co/pyannote/segmentation-3.0) for segmentation (knowing when speech occur)
+pyannote-rs uses 2 models for speaker diarization:
 
-The second model is [wespeaker-voxceleb-resnet34-LM](https://huggingface.co/pyannote/wespeaker-voxceleb-resnet34-LM) which uses to identify who is speaking.
+1. **Segmentation**: [segmentation-3.0](https://huggingface.co/pyannote/segmentation-3.0) identifies when speech occurs.
+2. **Speaker Identification**: [wespeaker-voxceleb-resnet34-LM](https://huggingface.co/pyannote/wespeaker-voxceleb-resnet34-LM) identifies who is speaking.
 
-All the inference happens in [onnxruntime](https://onnxruntime.ai/)
+Inference is powered by [onnxruntime](https://onnxruntime.ai/).
 
-The sementation model expects input of at most 10s audio. So we feed it with sliding window of 10s (iterate 10s and feed).
+- The segmentation model processes up to 10s of audio, using a sliding window approach (iterating in chunks).
+- The embedding model processes filter banks (audio features) extracted with [knf-rs](https://github.com/thewh1teagle/knf-rs).
 
-The embedding model expects input of `filter banks` (extracted features from the audio), so we use [knf-rs](https://github.com/thewh1teagle/knf-rs) to extract them.
-
-For speaker comparision (Eg. is Alis spoke again?) we use cosine similarity.
+Speaker comparison (e.g., determining if Alice spoke again) is done using cosine similarity.
+</details>
 
 ## Credits
 
