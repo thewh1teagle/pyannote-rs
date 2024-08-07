@@ -31,6 +31,7 @@ pub fn segment<P: AsRef<Path>>(
     let session = session::create_session(model_path.as_ref())?;
 
     // Define frame parameters
+    // https://github.com/pengzhendong/pyannote-onnx/blob/c6a2460e83af0d6fa83a5570b8aa55735edbce57/pyannote_onnx/pyannote_onnx.py#L49
     let frame_size = 270;
     let frame_start = 721;
     let window_size = (sample_rate * 10) as usize; // 10 seconds
