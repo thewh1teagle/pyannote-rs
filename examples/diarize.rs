@@ -4,38 +4,43 @@ use pyannote_rs::EmbeddingManager;
 use std::path::Path;
 
 fn main() -> Result<()> {
-    let model_path = Path::new("segmentation-3.0.onnx");
-    let (samples, sample_rate) =
-        pyannote_rs::read_wav(&std::env::args().nth(1).expect("Please specify audio file"))?;
+    let audio_path = std::env::args().nth(1).expect("Please specify audio file");
+    let max_speakers = 6;
+    let embedding_model_path = Path::new("wespeaker_en_voxceleb_CAM++.onnx");
+    let segmentation_model_path = Path::new("segmentation-3.0.onnx");
 
-    let mut embedding_extractor =
-        EmbeddingExtractor::new(Path::new("wespeaker_en_voxceleb_CAM++.onnx")).unwrap();
-    let mut embedding_manager = EmbeddingManager::new(6);
+    let (samples, sample_rate) = pyannote_rs::read_wav(&audio_path)?;
+    let mut embedding_extractor = EmbeddingExtractor::new(embedding_model_path).unwrap();
+    let mut embedding_manager = EmbeddingManager::new(max_speakers);
 
-    let segments = pyannote_rs::segment(&samples, sample_rate, model_path)?;
+    let segments = pyannote_rs::segment(&samples, sample_rate, segmentation_model_path)?;
 
     for segment in segments {
-        // Compute embedding
+        // Compute the embedding result
+        let embedding_result = if let Ok(result) = embedding_extractor.compute(&segment.samples) {
+            result
+        } else {
+            println!(
+                "error: {:?}",
+                embedding_extractor.compute(&segment.samples).err().unwrap()
+            ); // Handle the error
+            println!(
+                "start = {:.2}, end = {:.2}, speaker = ?",
+                segment.start, segment.end
+            );
+            continue; // Skip to the next segment
+        };
 
-        match embedding_extractor.compute(&segment.samples) {
-            Ok(embedding_result) => {
-                let speaker = embedding_manager
-                    .search_speaker(embedding_result, 0.5)
-                    .map(|r| r.to_string())
-                    .unwrap_or("?".into());
-                println!(
-                    "start = {:.2}, end = {:.2}, speaker = {}",
-                    segment.start, segment.end, speaker
-                );
-            }
-            Err(error) => {
-                println!(
-                    "start = {:.2}, end = {:.2}, speaker = {}",
-                    segment.start, segment.end, "?"
-                );
-                println!("error: {:?}", error);
-            }
-        }
+        // Find the speaker
+        let speaker = embedding_manager
+            .search_speaker(embedding_result, 0.5)
+            .map(|r| r.to_string())
+            .unwrap_or("?".into());
+
+        println!(
+            "start = {:.2}, end = {:.2}, speaker = {}",
+            segment.start, segment.end, speaker
+        );
     }
 
     Ok(())
