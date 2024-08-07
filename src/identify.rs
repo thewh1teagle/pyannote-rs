@@ -1,3 +1,4 @@
+use eyre::{bail, Result};
 use ndarray::Array1;
 use std::collections::HashMap;
 
@@ -45,6 +46,24 @@ impl EmbeddingManager {
             }
             None => None,
         }
+    }
+
+    pub fn get_best_speaker_match(&mut self, embedding: Vec<f32>) -> Result<usize> {
+        if self.speakers.is_empty() {
+            bail!("no speakers")
+        }
+        let embedding_array = Array1::from_vec(embedding);
+        let mut best_speaker_id = 0;
+        let mut best_similarity = f32::MIN; // Initialize to the lowest possible value
+
+        for (&speaker_id, speaker_embedding) in &self.speakers {
+            let similarity = Self::cosine_similarity(&embedding_array, speaker_embedding);
+            if similarity > best_similarity {
+                best_speaker_id = speaker_id;
+                best_similarity = similarity;
+            }
+        }
+        Ok(best_speaker_id)
     }
 
     fn add_speaker(&mut self, embedding: Array1<f32>) -> usize {
