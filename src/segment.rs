@@ -45,8 +45,8 @@ pub fn segment(samples: &[i16], sample_rate: u32, model_path: &Path) -> Result<V
             .try_extract_tensor::<f32>()
             .expect("Failed to extract tensor");
 
-        for (_, row) in ort_out.outer_iter().enumerate() {
-            for (_, sub_row) in row.axis_iter(Axis(0)).enumerate() {
+        for row in ort_out.outer_iter() {
+            for sub_row in row.axis_iter(Axis(0)) {
                 let (max_index, _) = sub_row
                     .iter()
                     .enumerate()
