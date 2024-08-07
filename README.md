@@ -1,5 +1,8 @@
 # pyannote-rs
 
+[![Crates](https://img.shields.io/crates/v/pyannote-rs?logo=rust)](https://crates.io/crates/pyannote-rs/)
+[![License](https://img.shields.io/github/license/thewh1teagle/pyannote-rs?color=00aaaa&logo=license)](https://github.com/thewh1teagle/pyannote-rs/blob/main/LICENSE)
+
 Pyannote audio diarization in Rust
 
 ## Features
