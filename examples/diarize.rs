@@ -1,27 +1,25 @@
-use eyre::Result;
 use pyannote_rs::EmbeddingExtractor;
 use pyannote_rs::EmbeddingManager;
-use std::path::Path;
 
-fn main() -> Result<()> {
+fn main() {
     let audio_path = std::env::args().nth(1).expect("Please specify audio file");
     let max_speakers = 6;
     let search_threshold = 0.5;
 
-    let embedding_model_path = Path::new("wespeaker_en_voxceleb_CAM++.onnx");
-    let segmentation_model_path = Path::new("segmentation-3.0.onnx");
+    let embedding_model_path = "wespeaker_en_voxceleb_CAM++.onnx";
+    let segmentation_model_path = "segmentation-3.0.onnx";
 
-    let (samples, sample_rate) = pyannote_rs::read_wav(&audio_path)?;
+    let (samples, sample_rate) = pyannote_rs::read_wav(&audio_path).unwrap();
     let mut embedding_extractor = EmbeddingExtractor::new(embedding_model_path).unwrap();
     let mut embedding_manager = EmbeddingManager::new(max_speakers);
 
-    let segments = pyannote_rs::segment(&samples, sample_rate, segmentation_model_path)?;
+    let segments = pyannote_rs::segment(&samples, sample_rate, segmentation_model_path).unwrap();
 
     for segment in segments {
         // Compute the embedding result
         let embedding_result = match embedding_extractor.compute(&segment.samples) {
-            Ok(result) => result,
-            error => {
+            Ok(result) => result.collect(),
+            Err(error) => {
                 println!("error: {:?}", error);
                 println!(
                     "start = {:.2}, end = {:.2}, speaker = ?",
@@ -42,6 +40,4 @@ fn main() -> Result<()> {
             segment.start, segment.end, speaker
         );
     }
-
-    Ok(())
 }

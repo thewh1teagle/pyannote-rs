@@ -1,19 +1,38 @@
 use crate::session;
-use eyre::Result;
-use ndarray::Axis;
-use std::path::Path;
+use eyre::{Context, ContextCompat, Result};
+use ndarray::{ArrayBase, Axis, IxDyn, ViewRepr};
+use std::{cmp::Ordering, path::Path};
 
+#[derive(Debug, Clone)]
 pub struct Segment {
     pub start: f64,
     pub end: f64,
     pub samples: Vec<i16>,
 }
 
-pub fn segment(samples: &[i16], sample_rate: u32, model_path: &Path) -> Result<Vec<Segment>> {
+fn find_max_index(row: ArrayBase<ViewRepr<&f32>, IxDyn>) -> Result<usize> {
+    let (max_index, _) = row
+        .iter()
+        .enumerate()
+        .max_by(|a, b| {
+            a.1.partial_cmp(b.1)
+                .context("Comparison error")
+                .unwrap_or(Ordering::Equal)
+        })
+        .context("sub_row should not be empty")?;
+    Ok(max_index)
+}
+
+pub fn segment<P: AsRef<Path>>(
+    samples: &[i16],
+    sample_rate: u32,
+    model_path: P,
+) -> Result<Vec<Segment>> {
     // Create session using the provided model path
-    let session = session::create_session(model_path)?;
+    let session = session::create_session(model_path.as_ref())?;
 
     // Define frame parameters
+    // https://github.com/pengzhendong/pyannote-onnx/blob/c6a2460e83af0d6fa83a5570b8aa55735edbce57/pyannote_onnx/pyannote_onnx.py#L49
     let frame_size = 270;
     let frame_start = 721;
     let window_size = (sample_rate * 10) as usize; // 10 seconds
@@ -41,17 +60,13 @@ pub fn segment(samples: &[i16], sample_rate: u32, model_path: &Path) -> Result<V
 
         let ort_out = ort_outs
             .get("output")
-            .expect("Output tensor not found")
+            .context("Output tensor not found")?
             .try_extract_tensor::<f32>()
-            .expect("Failed to extract tensor");
+            .context("Failed to extract tensor")?;
 
-        for (_, row) in ort_out.outer_iter().enumerate() {
-            for (_, sub_row) in row.axis_iter(Axis(0)).enumerate() {
-                let (max_index, _) = sub_row
-                    .iter()
-                    .enumerate()
-                    .max_by(|a, b| a.1.partial_cmp(b.1).unwrap())
-                    .expect("sub_row should not be empty");
+        for row in ort_out.outer_iter() {
+            for sub_row in row.axis_iter(Axis(0)) {
+                let max_index = find_max_index(sub_row)?;
 
                 if max_index != 0 {
                     if !is_speeching {
