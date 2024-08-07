@@ -1,6 +1,7 @@
 use ndarray::Array1;
 use std::collections::HashMap;
 
+#[derive(Debug, Clone)]
 pub struct EmbeddingManager {
     max_speakers: usize,
     speakers: HashMap<usize, Array1<f32>>,

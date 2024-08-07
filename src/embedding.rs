@@ -4,6 +4,7 @@ use ndarray::Array2;
 use ort::Session;
 use std::path::Path;
 
+#[derive(Debug)]
 pub struct EmbeddingExtractor {
     session: Session,
 }

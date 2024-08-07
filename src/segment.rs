@@ -3,6 +3,7 @@ use eyre::{Context, ContextCompat, Result};
 use ndarray::{ArrayBase, Axis, IxDyn, ViewRepr};
 use std::{cmp::Ordering, path::Path};
 
+#[derive(Debug, Clone)]
 pub struct Segment {
     pub start: f64,
     pub end: f64,
