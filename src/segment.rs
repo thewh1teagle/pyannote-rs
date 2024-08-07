@@ -1,12 +1,25 @@
 use crate::session;
-use eyre::Result;
-use ndarray::Axis;
-use std::path::Path;
+use eyre::{Context, ContextCompat, Result};
+use ndarray::{ArrayBase, Axis, IxDyn, ViewRepr};
+use std::{cmp::Ordering, path::Path};
 
 pub struct Segment {
     pub start: f64,
     pub end: f64,
     pub samples: Vec<i16>,
+}
+
+fn find_max_index(row: ArrayBase<ViewRepr<&f32>, IxDyn>) -> Result<usize> {
+    let (max_index, _) = row
+        .iter()
+        .enumerate()
+        .max_by(|a, b| {
+            a.1.partial_cmp(b.1)
+                .context("Comparison error")
+                .unwrap_or(Ordering::Equal)
+        })
+        .context("sub_row should not be empty")?;
+    Ok(max_index)
 }
 
 pub fn segment(samples: &[i16], sample_rate: u32, model_path: &Path) -> Result<Vec<Segment>> {
@@ -41,17 +54,13 @@ pub fn segment(samples: &[i16], sample_rate: u32, model_path: &Path) -> Result<V
 
         let ort_out = ort_outs
             .get("output")
-            .expect("Output tensor not found")
+            .context("Output tensor not found")?
             .try_extract_tensor::<f32>()
-            .expect("Failed to extract tensor");
+            .context("Failed to extract tensor")?;
 
         for row in ort_out.outer_iter() {
             for sub_row in row.axis_iter(Axis(0)) {
-                let (max_index, _) = sub_row
-                    .iter()
-                    .enumerate()
-                    .max_by(|a, b| a.1.partial_cmp(b.1).unwrap())
-                    .expect("sub_row should not be empty");
+                let max_index = find_max_index(sub_row)?;
 
                 if max_index != 0 {
                     if !is_speeching {

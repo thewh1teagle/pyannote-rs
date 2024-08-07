@@ -1,5 +1,5 @@
 use crate::session;
-use eyre::Result;
+use eyre::{Context, ContextCompat, Result};
 use ndarray::Array2;
 use ort::Session;
 use std::path::Path;
@@ -27,9 +27,9 @@ impl EmbeddingExtractor {
         let ort_outs = self.session.run(inputs)?;
         let ort_out = ort_outs
             .get("embs")
-            .expect("Output tensor not found")
+            .context("Output tensor not found")?
             .try_extract_tensor::<f32>()
-            .expect("Failed to extract tensor");
+            .context("Failed to extract tensor")?;
 
         let embeddings: Vec<f32> = ort_out.iter().copied().collect();
 
