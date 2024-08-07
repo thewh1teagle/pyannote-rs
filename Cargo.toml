@@ -1,6 +1,6 @@
 [package]
 name = "pyannote-rs"
-version = "0.1.6"
+version = "0.1.7"
 edition = "2021"
 license = "MIT"
 description = "Speaker diarization using pyannote in Rust"
@@ -10,7 +10,7 @@ eyre = "0.6.12"
 hound = "3.5.1"
 ndarray = "0.15.6"
 ort = "2.0.0-rc.4"
-knf-rs = "0.1.4"
+knf-rs = "0.1.5"
 
 
 [[example]]
