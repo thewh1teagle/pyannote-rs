@@ -9,8 +9,8 @@ pub struct EmbeddingExtractor {
 }
 
 impl EmbeddingExtractor {
-    pub fn new(model_path: &Path) -> Result<Self> {
-        let session = session::create_session(model_path)?;
+    pub fn new<P: AsRef<Path>>(model_path: P) -> Result<Self> {
+        let session = session::create_session(model_path.as_ref())?;
         Ok(Self { session })
     }
 

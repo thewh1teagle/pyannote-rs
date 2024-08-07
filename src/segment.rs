@@ -22,9 +22,13 @@ fn find_max_index(row: ArrayBase<ViewRepr<&f32>, IxDyn>) -> Result<usize> {
     Ok(max_index)
 }
 
-pub fn segment(samples: &[i16], sample_rate: u32, model_path: &Path) -> Result<Vec<Segment>> {
+pub fn segment<P: AsRef<Path>>(
+    samples: &[i16],
+    sample_rate: u32,
+    model_path: P,
+) -> Result<Vec<Segment>> {
     // Create session using the provided model path
-    let session = session::create_session(model_path)?;
+    let session = session::create_session(model_path.as_ref())?;
 
     // Define frame parameters
     let frame_size = 270;
