@@ -23,3 +23,15 @@ _Build Example_
 ```console
 cargo run --example diarize 6_speakers.wav
 ```
+
+_Gotachas_
+
+On `Windows` static linking may fail.
+You can resolve it by creating `.cargo/config.toml` next to `Cargo.toml` with the following:
+
+```toml
+[target.'cfg(windows)']
+rustflags = ["-Ctarget-feature=+crt-static"]
+```
+
+Or set the environment variable `RUSTFLAGS` to `-C target-feature=+crt-static`
