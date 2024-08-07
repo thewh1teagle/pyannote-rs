@@ -3,7 +3,13 @@ use eyre::Result;
 use ndarray::Axis;
 use std::path::Path;
 
-pub fn segment(samples: &[i16], sample_rate: u32, model_path: &Path) -> Result<Vec<(f64, f64)>> {
+pub struct Segment {
+    pub start: f64,
+    pub end: f64,
+    pub samples: Vec<i16>,
+}
+
+pub fn segment(samples: &[i16], sample_rate: u32, model_path: &Path) -> Result<Vec<Segment>> {
     // Create session using the provided model path
     let session = session::create_session(model_path)?;
 
@@ -55,7 +61,21 @@ pub fn segment(samples: &[i16], sample_rate: u32, model_path: &Path) -> Result<V
                 } else if is_speeching {
                     let start = start_offset / sample_rate as f64;
                     let end = offset as f64 / sample_rate as f64;
-                    segments.push((start, end));
+
+                    let start_f64 = start * (sample_rate as f64);
+                    let end_f64 = end * (sample_rate as f64);
+
+                    // Ensure indices are within bounds
+                    let start_idx = start_f64.min((samples.len() - 1) as f64) as usize;
+                    let end_idx = end_f64.min(samples.len() as f64) as usize;
+
+                    let segment_samples = &padded_samples[start_idx..end_idx];
+
+                    segments.push(Segment {
+                        start,
+                        end,
+                        samples: segment_samples.to_vec(),
+                    });
                     is_speeching = false;
                 }
                 offset += frame_size;
