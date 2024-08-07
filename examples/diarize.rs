@@ -8,9 +8,6 @@ fn main() -> Result<()> {
     let (samples, sample_rate) =
         pyannote_rs::read_wav(&std::env::args().nth(1).expect("Please specify audio file"))?;
 
-    let mut samples_f32 = vec![0.0; samples.len()];
-    knf_rs::convert_integer_to_float_audio(&samples, &mut samples_f32);
-
     let mut embedding_extractor =
         EmbeddingExtractor::new(Path::new("wespeaker_en_voxceleb_CAM++.onnx")).unwrap();
     let mut embedding_manager = EmbeddingManager::new(6);
@@ -23,11 +20,11 @@ fn main() -> Result<()> {
         let end_f64 = end * (sample_rate as f64);
 
         // Ensure indices are within bounds
-        let start_idx = start_f64.min((samples_f32.len() - 1) as f64) as usize;
-        let end_idx = end_f64.min(samples_f32.len() as f64) as usize;
+        let start_idx = start_f64.min((samples.len() - 1) as f64) as usize;
+        let end_idx = end_f64.min(samples.len() as f64) as usize;
 
         // Extract segment samples
-        let segment_samples = &samples_f32[start_idx..end_idx];
+        let segment_samples = &samples[start_idx..end_idx];
 
         // Compute embedding
         match embedding_extractor.compute(&segment_samples) {
