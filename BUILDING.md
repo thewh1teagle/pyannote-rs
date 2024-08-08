@@ -28,7 +28,9 @@ _Gotachas_
 
 ---
 
-On `Windows` static linking may fail.
+<details>
+<summary>Static linking failed on Windows</summary>
+
 You can resolve it by creating `.cargo/config.toml` next to `Cargo.toml` with the following:
 
 ```toml
@@ -55,3 +57,5 @@ cargo build -vv >log.txt 2>&1
 ```
 
 Look for the flags `/MD` (Meaning it links it dynamically) and `/MT` or `-MT` (Meaning it links it statically). See [MSVC_RUNTIME_LIBRARY](https://cmake.org/cmake/help/latest/prop_tgt/MSVC_RUNTIME_LIBRARY.html) and [pyannote-rs/issues/1](https://github.com/thewh1teagle/pyannote-rs/issues/1)
+
+</details>
