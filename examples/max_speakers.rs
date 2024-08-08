@@ -2,7 +2,7 @@
 wget https://github.com/pengzhendong/pyannote-onnx/raw/master/pyannote_onnx/segmentation-3.0.onnx
 wget https://github.com/k2-fsa/sherpa-onnx/releases/download/speaker-recongition-models/wespeaker_en_voxceleb_CAM++.onnx
 wget https://github.com/thewh1teagle/sherpa-rs/releases/download/v0.1.0/6_speakers.wav
-cargo run --example diarize
+cargo run --example max_speakers
 */
 
 use pyannote_rs::EmbeddingExtractor;
@@ -27,7 +27,10 @@ fn main() {
         let embedding_result = match embedding_extractor.compute(&segment.samples) {
             Ok(result) => result.collect(),
             Err(error) => {
-                println!("error: {:?}", error);
+                println!(
+                    "Error in {:.2}s: {:.2}s: {:?}",
+                    segment.start, segment.end, error
+                );
                 println!(
                     "start = {:.2}, end = {:.2}, speaker = ?",
                     segment.start, segment.end
@@ -37,10 +40,17 @@ fn main() {
         };
 
         // Find the speaker
-        let speaker = embedding_manager
-            .search_speaker(embedding_result, search_threshold)
-            .map(|r| r.to_string())
-            .unwrap_or("?".into());
+        let speaker = if embedding_manager.get_all_speakers().len() == max_speakers {
+            embedding_manager
+                .get_best_speaker_match(embedding_result)
+                .map(|r| r.to_string())
+                .unwrap_or("?".into())
+        } else {
+            embedding_manager
+                .search_speaker(embedding_result, search_threshold)
+                .map(|r| r.to_string())
+                .unwrap_or("?".into())
+        };
 
         println!(
             "start = {:.2}, end = {:.2}, speaker = {}",

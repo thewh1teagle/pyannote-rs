@@ -19,4 +19,7 @@ directml = ["ort/directml"]
 msvc-static = ["knf-rs/msvc-static"]
 
 [[example]]
-name = "diarize"
+name = "max_speakers"
+
+[[example]]
+name = "infinite"
