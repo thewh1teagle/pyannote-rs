@@ -1,6 +1,6 @@
 [package]
 name = "pyannote-rs"
-version = "0.2.2"
+version = "0.2.3"
 edition = "2021"
 license = "MIT"
 description = "Speaker diarization using pyannote in Rust"
@@ -10,13 +10,13 @@ eyre = "0.6.12"
 hound = "3.5.1"
 ndarray = "0.15.6"
 ort = "2.0.0-rc.4"
-knf-rs = { version = "0.1.8", default-features = false, features = [] }
+knf-rs = { version = "0.1.9", features = [] }
 
 [features]
-default = ["msvc-static"]
+default = []
 coreml = ["ort/coreml"]
 directml = ["ort/directml"]
-msvc-static = ["knf-rs/msvc-static"]
+load-dynamic = ["ort/load-dynamic"]
 
 [[example]]
 name = "max_speakers"
