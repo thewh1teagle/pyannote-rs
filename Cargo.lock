@@ -315,9 +315,9 @@ dependencies = [
 
 [[package]]
 name = "knf-rs"
-version = "0.1.9"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bdfe58ea6f61cfaf41f256ef21a9a549134642fd634e2dc3b67c99f08dbc3c7b"
+checksum = "16373e9d1c0fe40f938246a58212acfbc708a0a51f827aa35a7681fdc394393a"
 dependencies = [
  "eyre",
  "knf-rs-sys",
@@ -326,9 +326,9 @@ dependencies = [
 
 [[package]]
 name = "knf-rs-sys"
-version = "0.1.9"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e0fa76f067aaeb74f3a709a27ee28ee60f13138de16b1cb444bc9f728f349357"
+checksum = "791cc8085699d508e0980f1213551d4402d66c5f534395ffa712afe89e4d5e54"
 dependencies = [
  "bindgen",
  "cmake",
@@ -529,7 +529,7 @@ dependencies = [
 
 [[package]]
 name = "pyannote-rs"
-version = "0.2.3"
+version = "0.2.4"
 dependencies = [
  "eyre",
  "hound",
