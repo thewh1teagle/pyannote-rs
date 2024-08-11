@@ -315,9 +315,9 @@ dependencies = [
 
 [[package]]
 name = "knf-rs"
-version = "0.2.1"
+version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "16373e9d1c0fe40f938246a58212acfbc708a0a51f827aa35a7681fdc394393a"
+checksum = "e535063f2ab45fd9fb5116d5d77fde3e667947c8eebf1b52248edc8cd996d074"
 dependencies = [
  "eyre",
  "knf-rs-sys",
@@ -529,7 +529,7 @@ dependencies = [
 
 [[package]]
 name = "pyannote-rs"
-version = "0.2.4"
+version = "0.2.5"
 dependencies = [
  "eyre",
  "hound",
