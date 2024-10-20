@@ -1,3 +1,6 @@
+[workspace]
+members = ["libpyannote"]
+
 [package]
 name = "pyannote-rs"
 version = "0.2.7"

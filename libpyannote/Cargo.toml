@@ -1,0 +1,15 @@
+[package]
+name = "libpyannote"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "libpyannote"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyannote-rs = { path = "../" }
+once_cell = "1.18.0"
+
+[build-dependencies]
+cbindgen = "0.26.0"

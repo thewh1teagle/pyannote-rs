@@ -1,3 +1,8 @@
 /target
 *.onnx
 *.wav
+__pycache__
+*.dylib
+*.dll
+*.so
+*.h
