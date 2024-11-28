@@ -1,3 +1,6 @@
+[workspace]
+members = ["crates/knf-rs", "crates/knf-rs/sys"]
+
 [package]
 name = "pyannote-rs"
 version = "0.2.7"
@@ -10,7 +13,7 @@ eyre = "0.6.12"
 hound = "3.5.1"
 ndarray = "0.16"
 ort = "2.0.0-rc.9"
-knf-rs = { version = "0.2.4", features = [] }
+knf-rs = { path = "crates/knf-rs", version = "0.2.4", features = [] }
 
 [features]
 default = []

@@ -1,0 +1,15 @@
+[package]
+name = "knf-rs"
+version = "0.2.4"
+edition = "2021"
+license = "MIT"
+description = "fbank features extractor without external dependencies"
+
+[dependencies]
+knf-rs-sys = { path = "sys", version = "0.2.4", features = [] }
+eyre = "0.6.12"
+ndarray = "0.16"
+
+
+[features]
+default = []

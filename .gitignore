@@ -1,3 +1,4 @@
-/target
+target/
+build/
 *.onnx
 *.wav

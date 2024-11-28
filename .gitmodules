@@ -1,0 +1,3 @@
+[submodule "crates/knf-rs/sys/knf"]
+	path = crates/knf-rs/sys/knf
+	url = https://github.com/csukuangfj/kaldi-native-fbank
