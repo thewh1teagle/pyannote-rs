@@ -59,3 +59,10 @@ cargo build -vv >log.txt 2>&1
 Look for the flags `/MD` (Meaning it links it dynamically) and `/MT` or `-MT` (Meaning it links it statically). See [MSVC_RUNTIME_LIBRARY](https://cmake.org/cmake/help/latest/prop_tgt/MSVC_RUNTIME_LIBRARY.html) and [pyannote-rs/issues/1](https://github.com/thewh1teagle/pyannote-rs/issues/1)
 
 </details>
+
+## Release new version
+
+```console
+gh release create v0.2.8 --title "v0.2.8" --generate-notes
+git pull # Fetch new tags
+```
