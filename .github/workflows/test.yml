@@ -1,0 +1,61 @@
+name: Test
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_debug:
+        required: false
+        default: "0"
+      cmake_verbose:
+        required: false
+        default: ""
+      cargo_args:
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ${{ matrix.platform }}
+    env:
+      BUILD_DEBUG: ${{ github.event.inputs.build_debug }}
+      CMAKE_VERBOSE: ${{ github.event.inputs.cmake_verbose }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: "macos-latest" # ARM
+            options: ""
+
+          - platform: "macos-latest" # Intel
+            options: "--target x86_64-apple-darwin"
+
+          - platform: "ubuntu-22.04" # Linux
+            options: ""
+
+          - platform: "windows-latest" # Windows
+            options: ""
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: "true"
+
+      - name: Cache Rust
+        uses: Swatinem/rust-cache@v2
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          # Those targets are only used on macos runners so it's in an `if` to slightly speed up windows and linux builds.
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+
+      - name: Build
+        run: |
+          cargo build ${{ matrix.options }} ${{ github.event.inputs.cargo_args }}
+
+      - name: Test
+        run: |
+          cargo test ${{ matrix.options }} ${{ github.event.inputs.cargo_args }} -- --nocapture
