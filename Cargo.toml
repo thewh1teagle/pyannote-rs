@@ -9,7 +9,7 @@ description = "Speaker diarization using pyannote in Rust"
 eyre = "0.6.12"
 hound = "3.5.1"
 ndarray = "0.16"
-ort = "2.0.0-rc.5"
+ort = "2.0.0-rc.9"
 knf-rs = { version = "0.2.4", features = [] }
 
 [features]
