@@ -1,6 +1,6 @@
 [package]
 name = "knf-rs-sys"
-version = "0.2.8"
+version = "0.2.9"
 edition = "2021"
 license = "MIT"
 description = "fbank features extractor without external dependencies"

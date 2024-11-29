@@ -3,7 +3,7 @@ members = ["crates/knf-rs", "crates/knf-rs/sys"]
 
 [package]
 name = "pyannote-rs"
-version = "0.2.8"
+version = "0.2.9"
 edition = "2021"
 license = "MIT"
 description = "Speaker diarization using pyannote in Rust"
@@ -13,7 +13,7 @@ eyre = "0.6.12"
 hound = "3.5.1"
 ndarray = "0.16"
 ort = "2.0.0-rc.9"
-knf-rs = { path = "crates/knf-rs", version = "0.2.8", features = [] }
+knf-rs = { path = "crates/knf-rs", version = "0.2.9", features = [] }
 
 [features]
 default = []
