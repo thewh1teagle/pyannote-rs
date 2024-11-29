@@ -300,7 +300,7 @@ dependencies = [
 
 [[package]]
 name = "knf-rs"
-version = "0.2.8"
+version = "0.2.9"
 dependencies = [
  "eyre",
  "knf-rs-sys",
@@ -309,7 +309,7 @@ dependencies = [
 
 [[package]]
 name = "knf-rs-sys"
-version = "0.2.8"
+version = "0.2.9"
 dependencies = [
  "bindgen",
  "cmake",
@@ -524,7 +524,7 @@ dependencies = [
 
 [[package]]
 name = "pyannote-rs"
-version = "0.2.8"
+version = "0.2.9"
 dependencies = [
  "eyre",
  "hound",

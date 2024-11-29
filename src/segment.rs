@@ -50,6 +50,7 @@ pub fn get_segments<P: AsRef<Path>>(
     let mut start_iter = (0..padded_samples.len()).step_by(window_size);
 
     Ok(std::iter::from_fn(move || {
+        let mut segment: Option<Segment> = None;
         if let Some(start) = start_iter.next() {
             let end = (start + window_size).min(padded_samples.len());
             let window = &padded_samples[start..end];
@@ -109,16 +110,16 @@ pub fn get_segments<P: AsRef<Path>>(
 
                         is_speeching = false;
 
-                        return Some(Ok(Segment {
+                        segment = Some(Segment {
                             start,
                             end,
                             samples: segment_samples.to_vec(),
-                        }));
+                        });
                     }
                     offset += frame_size;
                 }
             }
         }
-        None
+        segment.map(Ok)
     }))
 }
