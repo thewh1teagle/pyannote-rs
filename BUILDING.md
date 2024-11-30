@@ -63,6 +63,6 @@ Look for the flags `/MD` (Meaning it links it dynamically) and `/MT` or `-MT` (M
 ## Release new version
 
 ```console
-gh release create v0.2.9 --title "v0.2.9" --generate-notes
+gh release create v0.3.0-beta.0 --title "v0.3.0-beta.0" --generate-notes
 git pull # Fetch new tags
 ```
