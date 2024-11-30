@@ -1,7 +1,7 @@
 use crate::session;
 use eyre::{Context, ContextCompat, Result};
 use ndarray::{ArrayBase, Axis, IxDyn, ViewRepr};
-use std::{cmp::Ordering, path::Path};
+use std::{cmp::Ordering, collections::VecDeque, path::Path};
 
 #[derive(Debug, Clone)]
 #[repr(C)]
@@ -49,8 +49,8 @@ pub fn get_segments<P: AsRef<Path>>(
 
     let mut start_iter = (0..padded_samples.len()).step_by(window_size);
 
+    let mut segments_queue = VecDeque::new();
     Ok(std::iter::from_fn(move || {
-        let mut segment: Option<Segment> = None;
         if let Some(start) = start_iter.next() {
             let end = (start + window_size).min(padded_samples.len());
             let window = &padded_samples[start..end];
@@ -110,16 +110,17 @@ pub fn get_segments<P: AsRef<Path>>(
 
                         is_speeching = false;
 
-                        segment = Some(Segment {
+                        let segment = Segment {
                             start,
                             end,
                             samples: segment_samples.to_vec(),
-                        });
+                        };
+                        segments_queue.push_back(segment);
                     }
                     offset += frame_size;
                 }
             }
         }
-        segment.map(Ok)
+        segments_queue.pop_front().map(Ok)
     }))
 }
