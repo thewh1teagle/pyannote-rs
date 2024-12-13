@@ -7,6 +7,7 @@ version = "0.3.0-beta.0"
 edition = "2021"
 license = "MIT"
 description = "Speaker diarization using pyannote in Rust"
+repository = "https://github.com/thewh1teagle/pyannote-rs"
 
 [dependencies]
 eyre = "0.6.12"
