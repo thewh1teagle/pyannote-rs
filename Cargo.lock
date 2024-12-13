@@ -524,7 +524,7 @@ dependencies = [
 
 [[package]]
 name = "pyannote-rs"
-version = "0.3.0-beta.0"
+version = "0.3.0"
 dependencies = [
  "eyre",
  "hound",
