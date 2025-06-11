@@ -1,6 +1,7 @@
 use crate::session;
 use eyre::{Context, ContextCompat, Result};
 use ndarray::{ArrayBase, Axis, IxDyn, ViewRepr};
+use ort::value::TensorRef;
 use std::{cmp::Ordering, collections::VecDeque, path::Path};
 
 #[derive(Debug, Clone)]
@@ -30,7 +31,7 @@ pub fn get_segments<P: AsRef<Path>>(
     model_path: P,
 ) -> Result<impl Iterator<Item = Result<Segment>> + '_> {
     // Create session using the provided model path
-    let session = session::create_session(model_path.as_ref())?;
+    let mut session = session::create_session(model_path.as_ref())?;
 
     // Define frame parameters
     let frame_size = 270;
@@ -60,10 +61,11 @@ pub fn get_segments<P: AsRef<Path>>(
             let array = array.view().insert_axis(Axis(0)).insert_axis(Axis(1));
 
             // Handle potential errors during the session and input processing
-            let inputs = match ort::inputs![array.into_dyn()] {
-                Ok(inputs) => inputs,
-                Err(e) => return Some(Err(eyre::eyre!("Failed to prepare inputs: {:?}", e))),
+            let tensor_ref = match TensorRef::from_array_view(array.into_dyn()) {
+                Ok(tensor) => tensor,
+                Err(e) => return Some(Err(eyre::eyre!("Failed to create tensor: {:?}", e))),
             };
+            let inputs = ort::inputs![tensor_ref];
 
             let ort_outs = match session.run(inputs) {
                 Ok(outputs) => outputs,
@@ -75,15 +77,15 @@ pub fn get_segments<P: AsRef<Path>>(
                 Err(e) => return Some(Err(eyre::eyre!("Output tensor error: {:?}", e))),
             };
 
-            let ort_out = match ort_out
-                .try_extract_tensor::<f32>()
+            let tensor = match ort_out
+                .try_extract_array::<f32>()
                 .context("Failed to extract tensor")
             {
                 Ok(tensor) => tensor,
                 Err(e) => return Some(Err(eyre::eyre!("Tensor extraction error: {:?}", e))),
             };
 
-            for row in ort_out.outer_iter() {
+            for row in tensor.outer_iter() {
                 for sub_row in row.axis_iter(Axis(0)) {
                     let max_index = match find_max_index(sub_row) {
                         Ok(index) => index,
