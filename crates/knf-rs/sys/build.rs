@@ -1,6 +1,6 @@
 use cmake::Config;
 use std::env;
-use std::path::{Path, PathBuf};
+use std::path::{ Path, PathBuf };
 
 macro_rules! debug_log {
     ($($arg:tt)*) => {
@@ -13,7 +13,8 @@ macro_rules! debug_log {
 fn copy_folder(src: &Path, dst: &Path) {
     std::fs::create_dir_all(dst).expect("Failed to create dst directory");
     if cfg!(unix) {
-        std::process::Command::new("cp")
+        std::process::Command
+            ::new("cp")
             .arg("-rf")
             .arg(src)
             .arg(dst.parent().expect("no parent"))
@@ -22,7 +23,8 @@ fn copy_folder(src: &Path, dst: &Path) {
     }
 
     if cfg!(windows) {
-        std::process::Command::new("robocopy.exe")
+        std::process::Command
+            ::new("robocopy.exe")
             .arg("/e")
             .arg(src)
             .arg(dst)
@@ -39,15 +41,12 @@ fn main() {
     let knf_dst = out_dir.join("knf");
     let knfc_src = Path::new(&manifest_dir).join("knfc");
     let knfc_dst = out_dir.join("knfc");
-    let static_crt = env::var("KNF_STATIC_CRT")
+    let static_crt = env
+        ::var("KNF_STATIC_CRT")
         .map(|v| v == "1")
         .unwrap_or(false);
 
-    let profile = if cfg!(debug_assertions) {
-        "Debug"
-    } else {
-        "Release"
-    };
+    let profile = if cfg!(debug_assertions) { "Debug" } else { "Release" };
 
     debug_log!("TARGET: {}", target);
     debug_log!("CARGO_MANIFEST_DIR: {}", manifest_dir);
@@ -64,7 +63,8 @@ fn main() {
     }
 
     // Bindings
-    let bindings = bindgen::Builder::default()
+    let bindings = bindgen::Builder
+        ::default()
         .header("wrapper.hpp")
         .clang_arg(format!("-I{}", knfc_dst.display()))
         .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
@@ -73,9 +73,7 @@ fn main() {
 
     // Write the generated bindings to an output file
     let bindings_path = out_dir.join("bindings.rs");
-    bindings
-        .write_to_file(bindings_path)
-        .expect("Failed to write bindings");
+    bindings.write_to_file(bindings_path).expect("Failed to write bindings");
 
     println!("cargo:rerun-if-changed=./knf");
     println!("cargo:rerun-if-changed=./knfc");
@@ -92,6 +90,7 @@ fn main() {
 
     config
         .profile(profile)
+        .define("CMAKE_POLICY_VERSION_MINIMUM", "3.5")
         .very_verbose(std::env::var("CMAKE_VERBOSE").is_ok()) // Not verbose by default
         .always_configure(false)
         .build();
