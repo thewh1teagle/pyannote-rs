@@ -102,9 +102,12 @@ pub fn get_segments<P: AsRef<Path>>(
                             }
                         } else if in_speech_segment {
                             let start = start_offset / sample_rate as f64;
-                            let end = offset as f64 / sample_rate as f64;
+                            let end = (offset as f64 + (sample_rate as f64 * 0.2)) / sample_rate as f64;
                             let start_idx = (start * sample_rate as f64).min((samples.len() - 1) as f64) as usize;
-                            let end_idx = (end * sample_rate as f64).min(samples.len() as f64) as usize;
+                            let mut end_idx = (end * sample_rate as f64).min(samples.len() as f64) as usize;
+                            if end_idx > padded_samples.len() {
+                                end_idx = padded_samples.len();
+                            }
 
                             if start_idx < end_idx {
                                 let segment_samples = &padded_samples[start_idx..end_idx];
@@ -126,9 +129,12 @@ pub fn get_segments<P: AsRef<Path>>(
             // No more windows to process. Flush the final segment if necessary.
             if in_speech_segment {
                 let start = start_offset / sample_rate as f64;
-                let end = offset as f64 / sample_rate as f64;
+                let end = (offset as f64 + (sample_rate as f64 * 0.2)) / sample_rate as f64;
                 let start_idx = (start * sample_rate as f64).min((samples.len() - 1) as f64) as usize;
-                let end_idx = (end * sample_rate as f64).min(samples.len() as f64) as usize;
+                let mut end_idx = (end * sample_rate as f64).min(samples.len() as f64) as usize;
+                if end_idx > padded_samples.len() {
+                    end_idx = padded_samples.len();
+                }
 
                 if start_idx < end_idx {
                     let segment_samples = &padded_samples[start_idx..end_idx];
