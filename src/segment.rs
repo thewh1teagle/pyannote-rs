@@ -70,7 +70,7 @@ pub fn get_segments<P: AsRef<Path>>(
                 Err(e) => return Some(Err(eyre::eyre!("Failed to run the session: {:?}", e))),
             };
 
-            let ort_out = match ort_outs.get("output").context("Output tensor not found") {
+            let ort_out = match ort_outs.get("y").context("Output tensor not found") {
                 Ok(output) => output,
                 Err(e) => return Some(Err(eyre::eyre!("Output tensor error: {:?}", e))),
             };
