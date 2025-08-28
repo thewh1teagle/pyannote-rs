@@ -92,6 +92,7 @@ fn main() {
 
     config
         .profile(profile)
+        .define("CMAKE_POLICY_VERSION_MINIMUM", "3.5")
         .very_verbose(std::env::var("CMAKE_VERBOSE").is_ok()) // Not verbose by default
         .always_configure(false)
         .build();
