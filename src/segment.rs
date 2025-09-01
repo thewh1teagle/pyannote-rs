@@ -1,7 +1,7 @@
 use crate::session;
 use eyre::{Context, ContextCompat, Result};
 use ndarray::{ArrayBase, Axis, IxDyn, ViewRepr};
-use std::{cmp::Ordering, collections::{VecDeque}, path::Path};
+use std::{cmp::Ordering, collections::VecDeque, path::Path};
 use std::iter;
 
 #[derive(Debug, Clone)]
