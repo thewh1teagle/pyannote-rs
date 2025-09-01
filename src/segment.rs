@@ -55,6 +55,7 @@ pub fn get_segments<P: AsRef<Path>>(
     let mut offset = frame_start; // Global offset for tracking speech start/end times
     let mut segment_start_offset = 0.0;
     let mut silence_frame_count = 0; // Track consecutive silence frames
+    let mut last_segment_end = 0.0;
 
     // --- Audio Padding ---
     // Pad the end with a full window of silence. This is a robust way to ensure
@@ -129,6 +130,7 @@ pub fn get_segments<P: AsRef<Path>>(
                                 // Start a new speech segment with generous buffer
                                 let start_buffer_samples = (sample_rate as f64 * start_buffer_ms as f64 / 1000.0) as usize;
                                 segment_start_offset = (offset as i64 - start_buffer_samples as i64).max(0) as f64;
+                                segment_start_offset = segment_start_offset.max(last_segment_end);
                                 in_speech_segment = true;
                             }
                         } else if in_speech_segment {
@@ -157,6 +159,7 @@ pub fn get_segments<P: AsRef<Path>>(
                                             end: end_sec,
                                             samples: segment_samples.to_vec(),
                                         }));
+                                        last_segment_end = end_idx as f64;
                                     }
                                 }
                                 
@@ -194,6 +197,7 @@ pub fn get_segments<P: AsRef<Path>>(
                             end: end_sec,
                             samples: segment_samples.to_vec(),
                         }));
+                        last_segment_end = end_idx as f64;
                     }
                 }
                 in_speech_segment = false; // Mark as flushed
