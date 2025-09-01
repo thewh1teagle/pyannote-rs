@@ -47,11 +47,6 @@ pub fn get_segments<P: AsRef<Path>>(
     // --- Simplified Segmentation Parameters ---
     let gap_tolerance_frames = 5; // Allow 10 frames (~0.1s) of silence before ending segment
     let min_segment_duration_ms = 150; // Minimum segment duration in milliseconds
-    let start_buffer_ms = 0; // No start buffer to avoid pre-speech padding
-    let end_buffer_ms = 0; // No end buffer to avoid expanding into non-speech
-    // Precompute buffer sizes in samples
-    let start_buffer_samples = (sample_rate as f64 * start_buffer_ms as f64 / 1000.0) as usize;
-    let end_buffer_samples = (sample_rate as f64 * end_buffer_ms as f64 / 1000.0) as usize;
     // Require a short run of speech frames before starting (time-based -> frames)
     let start_hysteresis_ms = 500; // delay start until ~0.5s of consecutive speech
     let start_hysteresis_frames = ((sample_rate as f64 * start_hysteresis_ms as f64 / 1000.0) / frame_size as f64)
@@ -62,7 +57,6 @@ pub fn get_segments<P: AsRef<Path>>(
     let mut in_speech_segment = false;
     let mut seg_start_samples: usize = 0; // Segment start in samples
     let mut silence_frame_count: usize = 0; // Track consecutive silence frames
-    let mut last_segment_end_samples: usize = 0; // Last finalized segment end in samples
     let mut last_emitted_offset: usize = 0; // Last processed absolute offset to dedupe overlaps
     let mut class_counts: HashMap<usize, usize> = HashMap::new();
     let mut speech_run: usize = 0; // consecutive speech frames (for hysteresis)
@@ -147,10 +141,9 @@ pub fn get_segments<P: AsRef<Path>>(
                             speech_run += 1;
 
                             if !in_speech_segment && speech_run >= start_hysteresis_frames {
-                                // Backtrack to the start of this speech run, then apply start buffer
+                                // Backtrack to the start of this speech run; no extra buffer
                                 let first_abs_offset = abs_offset.saturating_sub((speech_run - 1) * frame_size);
-                                let mut start_samp = first_abs_offset.saturating_sub(start_buffer_samples);
-                                start_samp = start_samp.max(last_segment_end_samples);
+                                let start_samp = first_abs_offset;
                                 seg_start_samples = start_samp;
                                 eprintln!("Starting segment at {:.2}s (abs_offset {})", seg_start_samples as f64 / sample_rate as f64, abs_offset);
                                 in_speech_segment = true;
@@ -163,7 +156,7 @@ pub fn get_segments<P: AsRef<Path>>(
                                 silence_frame_count += 1;
                                 // Only end segment if we've had enough consecutive silence frames
                                 if silence_frame_count >= gap_tolerance_frames {
-                                    let end_idx = (abs_offset + end_buffer_samples).min(samples.len());
+                                    let end_idx = abs_offset.min(samples.len());
                                     let start_idx = seg_start_samples.min(end_idx);
                                     let segment_duration_ms = ((end_idx.saturating_sub(start_idx)) as f64) * 1000.0 / sample_rate as f64;
                                     eprintln!("Ending segment at {:.2}s (abs_offset {}) with {} silence frames", end_idx as f64 / sample_rate as f64, abs_offset, silence_frame_count);
@@ -177,7 +170,6 @@ pub fn get_segments<P: AsRef<Path>>(
                                             end: end_sec,
                                             samples: segment_samples.to_vec(),
                                         }));
-                                        last_segment_end_samples = end_idx;
                                     }
                                     in_speech_segment = false;
                                     silence_frame_count = 0;
@@ -198,7 +190,7 @@ pub fn get_segments<P: AsRef<Path>>(
             // No more windows to process. Flush the final segment if it's still open.
             if in_speech_segment {
                 let start_idx = seg_start_samples.min(samples.len());
-                let end_idx = (last_emitted_offset + end_buffer_samples).min(samples.len());
+                let end_idx = last_emitted_offset.min(samples.len());
                 if end_idx > start_idx {
                     let segment_duration_ms = ((end_idx - start_idx) as f64) * 1000.0 / sample_rate as f64;
                     if segment_duration_ms >= min_segment_duration_ms as f64 {
@@ -210,7 +202,6 @@ pub fn get_segments<P: AsRef<Path>>(
                             end: end_sec,
                             samples: segment_samples.to_vec(),
                         }));
-                        last_segment_end_samples = end_idx;
                         eprintln!("Final segment class counts: {:?}", class_counts);
                         class_counts.clear();
                     }
