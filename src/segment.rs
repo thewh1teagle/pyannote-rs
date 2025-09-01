@@ -1,7 +1,7 @@
 use crate::session;
 use eyre::{Context, ContextCompat, Result};
 use ndarray::{ArrayBase, Axis, IxDyn, ViewRepr};
-use std::{cmp::Ordering, collections::{HashMap, VecDeque}, path::Path};
+use std::{cmp::Ordering, collections::{VecDeque}, path::Path};
 use std::iter;
 
 #[derive(Debug, Clone)]
@@ -58,7 +58,6 @@ pub fn get_segments<P: AsRef<Path>>(
     let mut seg_start_samples: usize = 0; // Segment start in samples
     let mut silence_frame_count: usize = 0; // Track consecutive silence frames
     let mut last_emitted_offset: usize = 0; // Last processed absolute offset to dedupe overlaps
-    let mut class_counts: HashMap<usize, usize> = HashMap::new();
     let mut speech_run: usize = 0; // consecutive speech frames (for hysteresis)
 
     // --- Audio Padding ---
@@ -131,9 +130,6 @@ pub fn get_segments<P: AsRef<Path>>(
                         }
 
                         let is_speech = max_index != 0;
-                        if in_speech_segment {
-                            *class_counts.entry(max_index).or_insert(0) += 1;
-                        }
 
                         if is_speech {
                             // Reset silence counter and grow speech run
@@ -145,7 +141,6 @@ pub fn get_segments<P: AsRef<Path>>(
                                 let first_abs_offset = abs_offset.saturating_sub((speech_run - 1) * frame_size);
                                 let start_samp = first_abs_offset;
                                 seg_start_samples = start_samp;
-                                eprintln!("Starting segment at {:.2}s (abs_offset {})", seg_start_samples as f64 / sample_rate as f64, abs_offset);
                                 in_speech_segment = true;
                             }
                         } else {
@@ -159,8 +154,6 @@ pub fn get_segments<P: AsRef<Path>>(
                                     let end_idx = abs_offset.min(samples.len());
                                     let start_idx = seg_start_samples.min(end_idx);
                                     let segment_duration_ms = ((end_idx.saturating_sub(start_idx)) as f64) * 1000.0 / sample_rate as f64;
-                                    eprintln!("Ending segment at {:.2}s (abs_offset {}) with {} silence frames", end_idx as f64 / sample_rate as f64, abs_offset, silence_frame_count);
-                                    eprintln!("Class counts: {:?}", class_counts);
                                     if segment_duration_ms >= min_segment_duration_ms as f64 && start_idx < end_idx {
                                         let start_sec = start_idx as f64 / sample_rate as f64;
                                         let end_sec = end_idx as f64 / sample_rate as f64;
@@ -173,7 +166,6 @@ pub fn get_segments<P: AsRef<Path>>(
                                     }
                                     in_speech_segment = false;
                                     silence_frame_count = 0;
-                                    class_counts.clear();
                                 }
                             }
                         }
@@ -202,8 +194,6 @@ pub fn get_segments<P: AsRef<Path>>(
                             end: end_sec,
                             samples: segment_samples.to_vec(),
                         }));
-                        eprintln!("Final segment class counts: {:?}", class_counts);
-                        class_counts.clear();
                     }
                 }
                 in_speech_segment = false; // Mark as flushed
