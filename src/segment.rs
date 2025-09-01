@@ -1,7 +1,7 @@
 use crate::session;
 use eyre::{Context, ContextCompat, Result};
 use ndarray::{ArrayBase, Axis, IxDyn, ViewRepr};
-use std::{cmp::Ordering, collections::VecDeque, path::Path};
+use std::{cmp::Ordering, collections::{HashMap, VecDeque}, path::Path};
 use std::iter;
 
 #[derive(Debug, Clone)]
@@ -45,10 +45,10 @@ pub fn get_segments<P: AsRef<Path>>(
     let frame_start = 721; // The model's receptive field or initial offset
 
     // --- Simplified Segmentation Parameters ---
-    let gap_tolerance_frames = 10; // Allow 10 frames (~170ms) of silence before ending segment
+    let gap_tolerance_frames = 60; // Allow 30 frames (~0.5s) of silence before ending segment
     let min_segment_duration_ms = 150; // Minimum segment duration in milliseconds
     let start_buffer_ms = 400; // Generous start buffer to capture speech onset
-    let end_buffer_ms = 300; // Generous end buffer to capture speech offset
+    let end_buffer_ms = 0; // No end buffer to avoid expanding into non-speech
     
     // --- Simple State Machine Variables ---
     let mut in_speech_segment = false;
@@ -56,6 +56,7 @@ pub fn get_segments<P: AsRef<Path>>(
     let mut segment_start_offset = 0.0;
     let mut silence_frame_count = 0; // Track consecutive silence frames
     let mut last_segment_end = 0.0;
+    let mut class_counts: HashMap<usize, usize> = HashMap::new();
 
     // --- Audio Padding ---
     // Pad the end with a full window of silence. This is a robust way to ensure
@@ -121,6 +122,9 @@ pub fn get_segments<P: AsRef<Path>>(
                         };
 
                         let is_speech = max_index != 0;
+                        if in_speech_segment {
+                            *class_counts.entry(max_index).or_insert(0) += 1;
+                        }
 
                         if is_speech {
                             // Reset silence counter when speech is detected
@@ -131,6 +135,7 @@ pub fn get_segments<P: AsRef<Path>>(
                                 let start_buffer_samples = (sample_rate as f64 * start_buffer_ms as f64 / 1000.0) as usize;
                                 segment_start_offset = (offset as i64 - start_buffer_samples as i64).max(0) as f64;
                                 segment_start_offset = segment_start_offset.max(last_segment_end);
+                                eprintln!("Starting segment at {:.2}s (offset {})", offset as f64 / sample_rate as f64, offset);
                                 in_speech_segment = true;
                             }
                         } else if in_speech_segment {
@@ -139,6 +144,8 @@ pub fn get_segments<P: AsRef<Path>>(
                             
                             // Only end segment if we've had enough consecutive silence frames
                             if silence_frame_count >= gap_tolerance_frames {
+                                eprintln!("Ending segment at {:.2}s (offset {}) with {} silence frames", offset as f64 / sample_rate as f64, offset, silence_frame_count);
+                                eprintln!("Class counts: {:?}", class_counts);
                                 // End the segment with generous buffer
                                 let start_sec = segment_start_offset / sample_rate as f64;
                                 let end_buffer_samples = (sample_rate as f64 * end_buffer_ms as f64 / 1000.0) as usize;
@@ -165,6 +172,7 @@ pub fn get_segments<P: AsRef<Path>>(
                                 
                                 in_speech_segment = false;
                                 silence_frame_count = 0;
+                                class_counts.clear();
                             }
                         }
                         
@@ -198,6 +206,8 @@ pub fn get_segments<P: AsRef<Path>>(
                             samples: segment_samples.to_vec(),
                         }));
                         last_segment_end = end_idx as f64;
+                        eprintln!("Final segment class counts: {:?}", class_counts);
+                        class_counts.clear();
                     }
                 }
                 in_speech_segment = false; // Mark as flushed
