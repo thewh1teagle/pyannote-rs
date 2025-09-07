@@ -30,7 +30,7 @@ pub fn get_segments<P: AsRef<Path>>(
     model_path: P,
 ) -> Result<impl Iterator<Item = Result<Segment>> + '_> {
     // Create session using the provided model path
-    let session = session::create_session(model_path.as_ref())?;
+    let mut session = session::create_session(model_path.as_ref())?;
 
     // Define frame parameters
     let frame_size = 270;
@@ -60,10 +60,9 @@ pub fn get_segments<P: AsRef<Path>>(
             let array = array.view().insert_axis(Axis(0)).insert_axis(Axis(1));
 
             // Handle potential errors during the session and input processing
-            let inputs = match ort::inputs![array.into_dyn()] {
-                Ok(inputs) => inputs,
-                Err(e) => return Some(Err(eyre::eyre!("Failed to prepare inputs: {:?}", e))),
-            };
+            let inputs = ort::inputs![ort::value::TensorRef::from_array_view(array.into_dyn())
+                .map_err(|e| eyre::eyre!("Failed to prepare inputs: {:?}", e))
+                .ok()?];
 
             let ort_outs = match session.run(inputs) {
                 Ok(outputs) => outputs,
@@ -83,7 +82,13 @@ pub fn get_segments<P: AsRef<Path>>(
                 Err(e) => return Some(Err(eyre::eyre!("Tensor extraction error: {:?}", e))),
             };
 
-            for row in ort_out.outer_iter() {
+            let (shape, data) = ort_out; // (&Shape, &[f32])
+                                         // Fix: shape is &Shape, but from_shape expects &[usize]
+            let shape_slice: Vec<usize> = (0..shape.len()).map(|i| shape[i] as usize).collect();
+            let view =
+                ndarray::ArrayViewD::<f32>::from_shape(ndarray::IxDyn(&shape_slice), data).unwrap();
+
+            for row in view.outer_iter() {
                 for sub_row in row.axis_iter(Axis(0)) {
                     let max_index = match find_max_index(sub_row) {
                         Ok(index) => index,

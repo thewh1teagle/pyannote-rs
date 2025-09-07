@@ -1,7 +1,7 @@
 use crate::session;
 use eyre::{Context, ContextCompat, Result};
 use ndarray::Array2;
-use ort::session::Session;
+use ort::{session::Session, value::Tensor};
 use std::path::Path;
 
 #[derive(Debug)]
@@ -23,7 +23,9 @@ impl EmbeddingExtractor {
 
         let features: Array2<f32> = knf_rs::compute_fbank(samples)?;
         let features = features.insert_axis(ndarray::Axis(0)); // Add batch dimension
-        let inputs = ort::inputs! ["feats" => features.view()]?;
+        let inputs = ort::inputs![
+        "feats" => Tensor::from_array(features)? // takes ownership of `features`
+        ];
 
         let ort_outs = self.session.run(inputs)?;
         let ort_out = ort_outs
@@ -33,7 +35,7 @@ impl EmbeddingExtractor {
             .context("Failed to extract tensor")?;
 
         // Collect the tensor data into a Vec to own it
-        let embeddings: Vec<f32> = ort_out.iter().copied().collect();
+        let embeddings: Vec<f32> = ort_out.1.iter().copied().collect();
 
         // Return an iterator over the Vec
         Ok(embeddings.into_iter())
