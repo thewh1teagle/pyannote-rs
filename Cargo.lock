@@ -300,7 +300,7 @@ dependencies = [
 
 [[package]]
 name = "knf-rs"
-version = "0.3.1"
+version = "0.3.2"
 dependencies = [
  "eyre",
  "knf-rs-sys",
@@ -309,7 +309,7 @@ dependencies = [
 
 [[package]]
 name = "knf-rs-sys"
-version = "0.3.1"
+version = "0.3.2"
 dependencies = [
  "bindgen",
  "cmake",

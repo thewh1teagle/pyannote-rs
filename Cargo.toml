@@ -14,7 +14,7 @@ eyre = "0.6.12"
 hound = "3.5.1"
 ndarray = "0.16"
 ort = "2.0.0-rc.9"
-knf-rs = { path = "crates/knf-rs", version = "0.3.1", features = [] }
+knf-rs = { path = "crates/knf-rs", version = "0.3.2", features = [] }
 
 [features]
 default = []
