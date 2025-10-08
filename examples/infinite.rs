@@ -15,8 +15,7 @@ fn process_segment(
 ) -> Result<(), eyre::Report> {
     let embedding_result: Vec<f32> = embedding_extractor
         .compute(&segment.samples)
-        .unwrap()
-        .collect();
+        .unwrap();
 
     let speaker = embedding_manager
         .search_speaker(embedding_result.clone(), search_threshold)
@@ -36,11 +35,17 @@ fn main() -> Result<(), eyre::Report> {
     let audio_path = std::env::args().nth(1).expect("Please specify audio file");
     let search_threshold = 0.5;
 
-    let embedding_model_path = "wespeaker_en_voxceleb_CAM++.onnx";
-    let segmentation_model_path = "segmentation-3.0.onnx";
+    // embedding model with PLDA transformations
+    let mut embedding_extractor = EmbeddingExtractor::new_with_plda(
+        "embedding_model.onnx",
+        "models/plda/xvec_transform.npz",
+        "models/plda/plda.npz",
+        128, // LDA dimension
+    )?;
+
+    let segmentation_model_path = "segmentation-community-1.onnx";
 
     let (samples, sample_rate) = pyannote_rs::read_wav(&audio_path)?;
-    let mut embedding_extractor = EmbeddingExtractor::new(embedding_model_path)?;
     let mut embedding_manager = EmbeddingManager::new(usize::MAX);
 
     let segments = pyannote_rs::get_segments(&samples, sample_rate, segmentation_model_path)?;

@@ -60,16 +60,19 @@ pub fn get_segments<P: AsRef<Path>>(
             let array = array.view().insert_axis(Axis(0)).insert_axis(Axis(1));
 
             // Handle potential errors during the session and input processing
-            let inputs = ort::inputs![ort::value::TensorRef::from_array_view(array.into_dyn())
-                .map_err(|e| eyre::eyre!("Failed to prepare inputs: {:?}", e))
-                .ok()?];
+
+            let inputs = ort::inputs![
+                "input_values" => ort::value::TensorRef::from_array_view(array.into_dyn())
+                    .map_err(|e| eyre::eyre!("Failed to prepare inputs: {:?}", e))
+                    .ok()?
+            ];
 
             let ort_outs = match session.run(inputs) {
                 Ok(outputs) => outputs,
                 Err(e) => return Some(Err(eyre::eyre!("Failed to run the session: {:?}", e))),
             };
 
-            let ort_out = match ort_outs.get("output").context("Output tensor not found") {
+            let ort_out = match ort_outs.get("logits").context("Output tensor not found") {
                 Ok(output) => output,
                 Err(e) => return Some(Err(eyre::eyre!("Output tensor error: {:?}", e))),
             };

@@ -5,11 +5,20 @@ fn main() {
     let (samples, sample_rate) = pyannote_rs::read_wav(&audio_path).unwrap();
     let max_speakers = 6;
 
-    let mut extractor = EmbeddingExtractor::new("wespeaker_en_voxceleb_CAM++.onnx").unwrap();
-    let mut manager = EmbeddingManager::new(6);
+    // Use the embedding model with PLDA transformations
+    let mut extractor = EmbeddingExtractor::new_with_plda(
+        "embedding_model.onnx",
+        "models/plda/xvec_transform.npz",
+        "models/plda/plda.npz",
+        128, // LDA dimension
+    )
+    .expect("Failed to create embedding extractor with PLDA");
 
-    let segments =
-        pyannote_rs::get_segments(&samples, sample_rate, "segmentation-3.0.onnx").unwrap();
+    let mut manager = EmbeddingManager::new(max_speakers);
+
+    // Use the new segmentation-community-1 model
+    let segments = pyannote_rs::get_segments(&samples, sample_rate, "segmentation-community-1.onnx")
+        .expect("Failed to get segments");
 
     for segment in segments {
         match segment {
@@ -17,12 +26,12 @@ fn main() {
                 if let Ok(embedding) = extractor.compute(&segment.samples) {
                     let speaker = if manager.get_all_speakers().len() == max_speakers {
                         manager
-                            .get_best_speaker_match(embedding.collect())
+                            .get_best_speaker_match(embedding)
                             .map(|s| s.to_string())
                             .unwrap_or("?".into())
                     } else {
                         manager
-                            .search_speaker(embedding.collect(), 0.5)
+                            .search_speaker(embedding, 0.5)
                             .map(|s| s.to_string())
                             .unwrap_or("?".into())
                     };
