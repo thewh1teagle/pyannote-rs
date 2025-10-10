@@ -1,15 +1,16 @@
-use pyannote_rs::{EmbeddingExtractor, EmbeddingManager};
+use pyannote_rs::{create_session, EmbeddingExtractor, EmbeddingManager};
 
-fn main() {
+fn main() -> Result<(), eyre::Report> {
     let audio_path = std::env::args().nth(1).expect("Please specify audio file");
-    let (samples, sample_rate) = pyannote_rs::read_wav(&audio_path).unwrap();
+    let (samples, sample_rate) = pyannote_rs::read_wav(&audio_path)?;
     let max_speakers = 6;
 
-    let mut extractor = EmbeddingExtractor::new("wespeaker_en_voxceleb_CAM++.onnx").unwrap();
+    let mut extractor = EmbeddingExtractor::new("wespeaker_en_voxceleb_CAM++.onnx")?;
     let mut manager = EmbeddingManager::new(6);
 
-    let segments =
-        pyannote_rs::get_segments(&samples, sample_rate, "segmentation-3.0.onnx").unwrap();
+    let mut session = create_session("segmentation-3.0.onnx")?;
+
+    let segments = pyannote_rs::get_segments(&samples, sample_rate, &mut session)?;
 
     for segment in segments {
         match segment {
@@ -40,4 +41,6 @@ fn main() {
             Err(error) => eprintln!("Failed to process segment: {:?}", error),
         }
     }
+
+    Ok(())
 }

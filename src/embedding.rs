@@ -15,6 +15,10 @@ impl EmbeddingExtractor {
         Ok(Self { session })
     }
 
+    pub fn from(session: Session) -> Result<Self> {
+        Ok(Self { session })
+    }
+
     pub fn compute(&mut self, samples: &[i16]) -> Result<impl Iterator<Item = f32>> {
         // Convert to f32 precisely
         let mut samples_f32 = vec![0.0; samples.len()];
