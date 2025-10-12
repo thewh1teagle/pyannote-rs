@@ -25,22 +25,21 @@ pub fn write_wav(file_path: &str, samples: &[i16], sample_rate: u32) -> Result<(
     Ok(())
 }
 
-fn main() {
+fn main() -> Result<()> {
     let audio_path = std::env::args().nth(1).expect("Please specify audio file");
-    let (samples, sample_rate) = pyannote_rs::read_wav(&audio_path).unwrap();
-    let segments =
-        pyannote_rs::get_segments(&samples, sample_rate, "segmentation-3.0.onnx").unwrap();
+    let (samples, sample_rate) = pyannote_rs::read_wav(&audio_path)?;
+    let segments = pyannote_rs::get_segments(&samples, sample_rate, "segmentation-3.0.onnx")?;
 
     // Create a folder with the base name of the input file
     let output_folder = format!(
         "{}_segments",
         Path::new(&audio_path)
             .file_stem()
-            .unwrap()
+            .ok_or(eyre::eyre!("No stem"))?
             .to_str()
-            .unwrap()
+            .ok_or(eyre::eyre!("Non-unicode file_name"))?
     );
-    fs::create_dir_all(&output_folder).unwrap();
+    fs::create_dir_all(&output_folder)?;
 
     for segment in segments {
         match segment {
@@ -49,10 +48,12 @@ fn main() {
                     "{}/start_{:.2}_end_{:.2}.wav",
                     output_folder, segment.start, segment.end
                 );
-                write_wav(&segment_file_name, &segment.samples, sample_rate).unwrap();
+                write_wav(&segment_file_name, &segment.samples, sample_rate)?;
                 println!("Created {}", segment_file_name);
             }
             Err(error) => eprintln!("Failed to process segment: {:?}", error),
         }
     }
+
+    Ok(())
 }
